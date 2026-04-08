@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": false,
+    "nodeVersion": "16.17.0",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.9.1"
+    },
+    "version": "1.17.0",
+    "libraryName": "sp-fx-practice",
+    "libraryId": "993a3a6e-1541-4507-a796-d14640e0ea3d",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "sp-fx-practice",
+    "solutionShortDescription": "sp-fx-practice description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

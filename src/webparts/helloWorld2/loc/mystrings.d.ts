@@ -1,0 +1,18 @@
+declare interface IHelloWorld2WebPartStrings {
+  PropertyPaneDescription: string;
+  BasicGroupName: string;
+  DescriptionFieldLabel: string;
+  AppLocalEnvironmentSharePoint: string;
+  AppLocalEnvironmentTeams: string;
+  AppLocalEnvironmentOffice: string;
+  AppLocalEnvironmentOutlook: string;
+  AppSharePointEnvironment: string;
+  AppTeamsTabEnvironment: string;
+  AppOfficeEnvironment: string;
+  AppOutlookEnvironment: string;
+}
+
+declare module 'HelloWorld2WebPartStrings' {
+  const strings: IHelloWorld2WebPartStrings;
+  export = strings;
+}
