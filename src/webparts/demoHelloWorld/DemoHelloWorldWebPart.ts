@@ -8,14 +8,28 @@ import {
 } from '@microsoft/sp-property-pane';
 
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { escape } from '@microsoft/sp-lodash-subset';
 
 import styles from './DemoHelloWorldWebPart.module.scss';
-import * as strings from 'DemoHelloWorldWebPartStrings';
+import * as strings from 'DemoHelloWorldWebPartStrings';  
+
+// ✅ Mock Client
 import MockHttpClient from './MockHttpClient';
 
-// Props
+// ✅ SharePoint HTTP Client
+import {
+  SPHttpClient,
+  SPHttpClientResponse
+} from '@microsoft/sp-http';
+
+// 
+import {
+  Environment,
+  EnvironmentType
+} from '@microsoft/sp-core-library';
+
+// ===================== INTERFACES =====================
+
 export interface IDemoHelloWorldWebPartProps {
   description: string;
   test: string;
@@ -24,38 +38,39 @@ export interface IDemoHelloWorldWebPartProps {
   test3: boolean;
 }
 
-// Models
+export interface ISPLists {
+  value: ISPList[];
+}
+
 export interface ISPList {
   Title: string;
   Id: string;
 }
 
-export interface ISPLists {
-  value: ISPList[];
-}
+// ===================== MAIN CLASS =====================
 
-export default class DemoHelloWorldWebPart extends BaseClientSideWebPart<IDemoHelloWorldWebPartProps> {
+export default class DemoHelloWorldWebPart
+  extends BaseClientSideWebPart<IDemoHelloWorldWebPartProps> {
 
-  private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
-
+  // ===================== RENDER =====================
   public render(): void {
+
     this.domElement.innerHTML = `
       <section class="${styles.demoHelloWorld}">
         <div class="${styles.welcome}">
           <h2>Well done, ${escape(this.context.pageContext.user.displayName)}!</h2>
-
           <p>Site: ${escape(this.context.pageContext.web.title)}</p>
           <p>User: ${escape(this.context.pageContext.user.displayName)}</p>
-
-          <div id="spListContainer"></div>
         </div>
+        <div id="spListContainer"></div>
       </section>
     `;
-     this._renderListAsync();
+
+    console.log("Render called");
+    this._renderListAsync();
   }
 
-  // Get Mock Data
+  // ===================== MOCK DATA =====================
   private _getMockListData(): Promise<ISPLists> {
     return MockHttpClient.get()
       .then((data: ISPList[]) => {
@@ -63,8 +78,22 @@ export default class DemoHelloWorldWebPart extends BaseClientSideWebPart<IDemoHe
       });
   }
 
-  // Render UI
+  // ===================== SHAREPOINT DATA =====================
+  private _getListData(): Promise<ISPLists> {
+    return this.context.spHttpClient
+      .get(
+        this.context.pageContext.web.absoluteUrl +
+        `/_api/web/lists?$filter=Hidden eq false`,
+        SPHttpClient.configurations.v1
+      )
+      .then((response: SPHttpClientResponse) => {
+        return response.json();
+      });
+  }
+
+  // ===================== RENDER LIST =====================
   private _renderList(items: ISPList[]): void {
+
     let html: string = '';
 
     items.forEach((item: ISPList) => {
@@ -73,45 +102,49 @@ export default class DemoHelloWorldWebPart extends BaseClientSideWebPart<IDemoHe
           <li class="${styles.listItem}">
             <span>${item.Title}</span>
           </li>
-        </ul>`;
+        </ul>
+      `;
     });
 
-    const listContainer = this.domElement.querySelector('#spListContainer');
-    if (listContainer) {
-      listContainer.innerHTML = html;
+    const container = this.domElement.querySelector('#spListContainer');
+
+    // ✅ Null safety
+    if (container) {
+      container.innerHTML = html;
     }
   }
 
-  // Async Call
-    private _renderListAsync(): void {
+  // ===================== MAIN LOGIC =====================
+  private _renderListAsync(): void {
+
+    // ✅ Local Workbench
+    if (Environment.type === EnvironmentType.Local) {
+
       this._getMockListData()
         .then((response) => {
+          console.log("Mock Data:", response);
           this._renderList(response.value);
         })
-        .catch((error) => {
-          console.error("Error fetching list:", error);
-        });
+        .catch((error) => console.error("Mock Error:", error));
+
     }
 
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then(message => {
-      this._environmentMessage = message;
-    });
+    // ✅ SharePoint Workbench
+    else if (
+      Environment.type === EnvironmentType.SharePoint ||
+      Environment.type === EnvironmentType.ClassicSharePoint
+    ) {
+
+      this._getListData()
+        .then((response) => {
+          console.log("SP Data:", response);
+          this._renderList(response.value);
+        })
+        .catch((error) => console.error("SP Error:", error));
+    }
   }
 
-  private _getEnvironmentMessage(): Promise<string> {
-    return Promise.resolve(
-      this.context.isServedFromLocalhost
-        ? strings.AppLocalEnvironmentSharePoint
-        : strings.AppSharePointEnvironment
-    );
-  }
-
-  protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
-    if (!currentTheme) return;
-    this._isDarkTheme = !!currentTheme.isInverted;
-  }
-
+  // ===================== OTHER =====================
   protected get dataVersion(): Version {
     return Version.parse('1.0');
   }
