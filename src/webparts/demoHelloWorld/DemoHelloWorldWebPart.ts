@@ -13,10 +13,10 @@ import { escape } from '@microsoft/sp-lodash-subset';
 import styles from './DemoHelloWorldWebPart.module.scss';
 import * as strings from 'DemoHelloWorldWebPartStrings';  
 
-// ✅ Mock Client
+//  Mock Client
 import MockHttpClient from './MockHttpClient';
 
-// ✅ SharePoint HTTP Client
+//  SharePoint HTTP Client
 import {
   SPHttpClient,
   SPHttpClientResponse
@@ -108,7 +108,7 @@ export default class DemoHelloWorldWebPart
 
     const container = this.domElement.querySelector('#spListContainer');
 
-    // ✅ Null safety
+    //  Null safety
     if (container) {
       container.innerHTML = html;
     }
@@ -117,7 +117,7 @@ export default class DemoHelloWorldWebPart
   // ===================== MAIN LOGIC =====================
   private _renderListAsync(): void {
 
-    // ✅ Local Workbench
+    //  Local Workbench
     if (Environment.type === EnvironmentType.Local) {
 
       this._getMockListData()
@@ -129,7 +129,7 @@ export default class DemoHelloWorldWebPart
 
     }
 
-    // ✅ SharePoint Workbench
+    //  SharePoint Workbench
     else if (
       Environment.type === EnvironmentType.SharePoint ||
       Environment.type === EnvironmentType.ClassicSharePoint
